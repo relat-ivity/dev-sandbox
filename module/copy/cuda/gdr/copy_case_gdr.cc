@@ -50,8 +50,8 @@ std::vector<std::string> SplitNicNames(const char* nicNames)
 
 std::vector<std::string> DefaultNicNames()
 {
-    return {"mlx5_0", "mlx5_2", "mlx5_1", "mlx5_3", "mlx5_4", "mlx5_6", "mlx5_5",
-            "mlx5_7"};
+    return {"mlx5_0", "mlx5_2", "mlx5_4", "mlx5_6", "mlx5_8", "mlx5_10", "mlx5_12", "mlx5_14"};
+}
 }
 
 class GdrRuntimeGuard {

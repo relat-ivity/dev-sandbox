@@ -102,12 +102,12 @@ GDR 使用 `GDR_NICS` 环境变量指定 GPU 与 RDMA 网卡的映射关系。
 未设置 `GDR_NICS` 时使用默认映射：
 
 ```bash
-mlx5_0,mlx5_2,mlx5_1,mlx5_3,mlx5_4,mlx5_6,mlx5_5,mlx5_7
+mlx5_0,mlx5_2,mlx5_4,mlx5_6,mlx5_8,mlx5_10,mlx5_12,mlx5_14
 ```
 
 8 卡示例：
 
 ```bash
-GDR_NICS=mlx5_0,mlx5_2,mlx5_1,mlx5_3,mlx5_4,mlx5_6,mlx5_5,mlx5_7 \
+GDR_NICS=mlx5_0,mlx5_2,mlx5_4,mlx5_6,mlx5_8,mlx5_10,mlx5_12,mlx5_14 \
 ./build/module/copy/copy -t all_host_to_all_device_gdr -s 16K -n 512 -i 128 -d 8
 ```
