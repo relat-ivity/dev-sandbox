@@ -52,7 +52,6 @@ std::vector<std::string> DefaultNicNames()
 {
     return {"mlx5_0", "mlx5_2", "mlx5_4", "mlx5_6", "mlx5_8", "mlx5_10", "mlx5_12", "mlx5_14"};
 }
-}
 
 class GdrRuntimeGuard {
 public:
