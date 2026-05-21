@@ -99,13 +99,16 @@ DEFINE_COPY_CASE(OneHost2AllDeviceGdrCase, "one_host_to_all_device_gdr",
                  "memcpy from one host to all device with gdr", ctx)
 {
     GdrRuntimeGuard guard{ctx.nDevice};
-    CopyResult result;
     GdrHostCopyBuffer srcBuffer{0, ctx.size, ctx.num};
+    std::vector<const CopyBuffer*> srcBuffers(ctx.nDevice, &srcBuffer);
+    std::vector<const CopyBuffer*> dstBuffers(ctx.nDevice);
     for (size_t device = 0; device < ctx.nDevice; device++) {
-        GdrDeviceCopyBuffer dstBuffer{device, ctx.size, ctx.num};
-        GdrCopyInstance instance{ctx.iter};
-        result.Push(instance.DoCopy(&srcBuffer, &dstBuffer));
+        dstBuffers[device] = new GdrDeviceCopyBuffer{device, ctx.size, ctx.num};
     }
+    GdrCopyInstance instance{ctx.iter};
+    CopyResult result;
+    result.Push(instance.DoCopyBatch(srcBuffers, dstBuffers));
+    for (size_t device = 0; device < ctx.nDevice; device++) { delete dstBuffers[device]; }
     result.Show("[[ " + Key() + " ]] " + Brief());
 }
 
