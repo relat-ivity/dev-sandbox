@@ -77,8 +77,8 @@ GDR case 注册在 `copy` 主程序中。CUDA 后端可用且系统检测到 `li
 | case | 传输方向 | 说明 |
 | --- | --- | --- |
 | `host_to_device_gdr` | host -> device | 通过 RDMA write 逐设备写入对应 GPU |
-| `one_host_to_all_device_gdr` | host0 -> all devices | 同一份 host buffer 通过 RDMA write 写入所有 GPU |
-| `all_host_to_all_device_gdr` | host[i] -> device[i] | 多个 host/device buffer 并发提交 RDMA write |
+| `one_host_to_all_device_gdr` | host0 -> all devices | 同一块 host buffer 向所有 GPU 并发提交 RDMA write |
+| `all_host_to_all_device_gdr` | host[i] -> device[i] | 每张卡对应独立 host/device buffer，并发提交 RDMA write |
 
 ### 模拟后端
 
