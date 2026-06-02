@@ -24,9 +24,11 @@
 #include "logger.h"
 #include <algorithm>
 #include <atomic>
+#include <cstdarg>
 #include <chrono>
 #include <condition_variable>
 #include <cstdio>
+#include <ctime>
 #include <functional>
 #include <libgen.h>
 #include <list>
@@ -156,14 +158,20 @@ public:
             auto systemTime = SystemClock::to_time_t(systemNow);
             std::tm systemTm;
             localtime_r(&systemTime, &systemTm);
-            fmt::format_to_n(datetime, sizeof(datetime), "{:%F %T}", systemTm);
+            if (std::strftime(datetime, sizeof(datetime), "%F %T", &systemTm) == 0) {
+                datetime[0] = '\0';
+            }
             lastSec = currentSec.time_since_epoch();
         }
         auto us =
             std::chrono::duration_cast<std::chrono::microseconds>(systemNow - currentSec).count();
-        auto payload = fmt::format("[{}.{:06d}][{}] {} [{},{}][{},{}:{}]\n", datetime, us,
-                                   lvStrs[fmt::underlying(lv)], message, pid, tid, loc.func,
-                                   basename(const_cast<char*>(loc.file)), loc.line);
+        char payloadBuf[4096];
+        auto written = std::snprintf(payloadBuf, sizeof(payloadBuf),
+                                     "[%s.%06lld][%s] %s [%zu,%zu][%s,%s:%d]\n", datetime,
+                                     static_cast<long long>(us), lvStrs[static_cast<size_t>(lv)],
+                                     message.c_str(), pid, tid, loc.func,
+                                     basename(const_cast<char*>(loc.file)), loc.line);
+        std::string payload = written < 0 ? "[format error]\n" : payloadBuf;
         auto steadyNow = SteadyClock::now();
         std::lock_guard lg(mtx_);
         frontBuf_.push_back(std::move(payload));
@@ -208,6 +216,30 @@ static void ChildFork()
 Logger::Logger() : impl_(std::make_unique<LoggerImpl>()) {}
 
 Logger::~Logger() = default;
+
+static std::string VStringPrintf(const char* format, va_list args)
+{
+    if (format == nullptr) { return "[format error]"; }
+    va_list argsCopy;
+    va_copy(argsCopy, args);
+    auto size = std::vsnprintf(nullptr, 0, format, argsCopy);
+    va_end(argsCopy);
+    if (size < 0) { return "[format error]"; }
+    std::vector<char> buffer(static_cast<size_t>(size) + 1);
+    va_copy(argsCopy, args);
+    auto written = std::vsnprintf(buffer.data(), buffer.size(), format, argsCopy);
+    va_end(argsCopy);
+    if (written < 0) { return "[format error]"; }
+    return {buffer.data(), static_cast<size_t>(written)};
+}
+
+void Logger::Log(Level lv, const SourceLocation& loc, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    LogInternal(lv, loc, VStringPrintf(format, args));
+    va_end(args);
+}
 
 void Logger::LogInternal(Level lv, const SourceLocation& loc, const std::string& message)
 {

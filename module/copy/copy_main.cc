@@ -22,7 +22,7 @@
  * SOFTWARE.
  * */
 #include <charconv>
-#include <fmt/format.h>
+#include <cstdio>
 #include <unordered_set>
 #include "copy_case.h"
 #include "copy_runtime.h"
@@ -33,20 +33,20 @@ struct ArgsParser {
 
     static void Help(std::string_view proc)
     {
-        fmt::println("Usage: {} [options]", proc);
-        fmt::println("Options:");
-        fmt::println("  -t <name>        Case name");
-        fmt::println("  -s <size>        Data size in KB/MB (e.g., 4K, 16K, 1M, default: 512MB)");
-        fmt::println("  -n <count>       Data number (default: 8)");
-        fmt::println("  -i <count>       Iteration count (default: 128)");
-        fmt::println("  -d <count>       Number of devices (default: 8)");
+        std::printf("Usage: %.*s [options]\n", static_cast<int>(proc.size()), proc.data());
+        std::printf("Options:\n");
+        std::printf("  -t <name>        Case name\n");
+        std::printf("  -s <size>        Data size in KB/MB (e.g., 4K, 16K, 1M, default: 512MB)\n");
+        std::printf("  -n <count>       Data number (default: 8)\n");
+        std::printf("  -i <count>       Iteration count (default: 128)\n");
+        std::printf("  -d <count>       Number of devices (default: 8)\n");
     }
     static std::size_t ParseUnsigned(std::string_view text, std::string_view errorMessage)
     {
         std::size_t value = 0;
         const auto [ptr, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
         if (ec != std::errc() || ptr != text.data() + text.size()) {
-            fmt::println("{}", errorMessage);
+            std::printf("%.*s\n", static_cast<int>(errorMessage.size()), errorMessage.data());
             std::exit(EXIT_FAILURE);
         }
         return value;
@@ -54,7 +54,7 @@ struct ArgsParser {
     static std::size_t ParseSize(std::string_view sizeStr)
     {
         if (sizeStr.empty()) {
-            fmt::println("Invalid size unit. Use K for KB or M for MB.");
+            std::printf("Invalid size unit. Use K for KB or M for MB.\n");
             std::exit(EXIT_FAILURE);
         }
         const auto unit = sizeStr.back();
@@ -66,7 +66,7 @@ struct ArgsParser {
             case 'M':
             case 'm': return value * 1024ull * 1024ull;
             default:
-                fmt::println("Invalid size unit. Use K for KB or M for MB.");
+                std::printf("Invalid size unit. Use K for KB or M for MB.\n");
                 std::exit(EXIT_FAILURE);
         }
     }
@@ -103,7 +103,7 @@ int main(int argc, char const* argv[])
     const auto cases = CopyCaseFactory::Instance().Filter(args.names);
     if (cases.empty()) {
         for (auto& c : CopyCaseFactory::Instance().AllCases()) {
-            fmt::println("{:<32}: {}", c->Key(), c->Brief());
+            std::printf("%-32s: %s\n", c->Key().c_str(), c->Brief().c_str());
         }
         return -1;
     }

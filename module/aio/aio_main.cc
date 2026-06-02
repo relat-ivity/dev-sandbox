@@ -22,6 +22,7 @@
  * SOFTWARE.
  * */
 #include <chrono>
+#include <cstdio>
 #include <random>
 #include "aio_engine.h"
 #include "host_buffer.h"
@@ -37,9 +38,9 @@ struct Config {
     bool Parse(int argc, char const* argv[])
     {
         auto PrintUsage = +[](const char* prog) {
-            fmt::println(
-                "Usage: {} --workspace <path> [--io-type mmap|alloc] [--io-size <bytes>] "
-                "[--io-number <n>] [--device-id <id>] [--epoch-number <n>]",
+            std::printf(
+                "Usage: %s --workspace <path> [--io-type mmap|alloc] [--io-size <bytes>] "
+                "[--io-number <n>] [--device-id <id>] [--epoch-number <n>]\n",
                 prog ? prog : "aio_main");
         };
         for (int i = 1; i < argc; ++i) {
@@ -51,7 +52,7 @@ struct Config {
 
             if (opt == "--workspace") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --workspace");
+                    std::printf("Missing value for --workspace\n");
                     return false;
                 }
                 workspace = argv[++i];
@@ -60,7 +61,7 @@ struct Config {
 
             if (opt == "--io-type") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --io-type");
+                    std::printf("Missing value for --io-type\n");
                     return false;
                 }
                 std::string v = argv[++i];
@@ -72,7 +73,7 @@ struct Config {
                 } else if (v == "alloc") {
                     ioType = aio::HostBuffer::Strategy::ALLOC;
                 } else {
-                    fmt::println("Unknown io-type: {}. Supported: mmap, alloc", v);
+                    std::printf("Unknown io-type: %s. Supported: mmap, alloc\n", v.c_str());
                     return false;
                 }
                 continue;
@@ -80,13 +81,13 @@ struct Config {
 
             if (opt == "--io-size") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --io-size");
+                    std::printf("Missing value for --io-size\n");
                     return false;
                 }
                 try {
                     ioSize = std::stoull(argv[++i]);
                 } catch (const std::exception& e) {
-                    fmt::println("Invalid number for --io-size: {}", e.what());
+                    std::printf("Invalid number for --io-size: %s\n", e.what());
                     return false;
                 }
                 continue;
@@ -94,13 +95,13 @@ struct Config {
 
             if (opt == "--io-number") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --io-number");
+                    std::printf("Missing value for --io-number\n");
                     return false;
                 }
                 try {
                     ioNumber = std::stoull(argv[++i]);
                 } catch (const std::exception& e) {
-                    fmt::println("Invalid number for --io-number: {}", e.what());
+                    std::printf("Invalid number for --io-number: %s\n", e.what());
                     return false;
                 }
                 continue;
@@ -108,13 +109,13 @@ struct Config {
 
             if (opt == "--device-id") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --device-id");
+                    std::printf("Missing value for --device-id\n");
                     return false;
                 }
                 try {
                     deviceId = std::stoull(argv[++i]);
                 } catch (const std::exception& e) {
-                    fmt::println("Invalid number for --device-id: {}", e.what());
+                    std::printf("Invalid number for --device-id: %s\n", e.what());
                     return false;
                 }
                 continue;
@@ -122,24 +123,24 @@ struct Config {
 
             if (opt == "--epoch-number") {
                 if (i + 1 >= argc) {
-                    fmt::println("Missing value for --epoch-number");
+                    std::printf("Missing value for --epoch-number\n");
                     return false;
                 }
                 try {
                     epochNumber = std::stoull(argv[++i]);
                 } catch (const std::exception& e) {
-                    fmt::println("Invalid number for --epoch-number: {}", e.what());
+                    std::printf("Invalid number for --epoch-number: %s\n", e.what());
                     return false;
                 }
                 continue;
             }
 
-            fmt::println("Unknown option: {}", opt);
+            std::printf("Unknown option: %s\n", opt.c_str());
             return false;
         }
 
         if (workspace.empty()) {
-            fmt::println("Error: --workspace is required");
+            std::printf("Error: --workspace is required\n");
             PrintUsage(argv[0]);
             return false;
         }
@@ -148,13 +149,13 @@ struct Config {
     }
     void Show() const
     {
-        fmt::println("Set Config::Workspace = {}.", workspace);
-        fmt::println("Set Config::IoType = {}.",
-                     ioType == aio::HostBuffer::Strategy::ALLOC ? "alloc" : "mmap");
-        fmt::println("Set Config::IoSize = {}.", ioSize);
-        fmt::println("Set Config::IoNumber = {}.", ioNumber);
-        fmt::println("Set Config::DeviceId = {}.", deviceId);
-        fmt::println("Set Config::EpochNumber = {}.", epochNumber);
+        std::printf("Set Config::Workspace = %s.\n", workspace.c_str());
+        std::printf("Set Config::IoType = %s.\n",
+                    ioType == aio::HostBuffer::Strategy::ALLOC ? "alloc" : "mmap");
+        std::printf("Set Config::IoSize = %zu.\n", ioSize);
+        std::printf("Set Config::IoNumber = %zu.\n", ioNumber);
+        std::printf("Set Config::DeviceId = %zu.\n", deviceId);
+        std::printf("Set Config::EpochNumber = %zu.\n", epochNumber);
     }
 };
 
@@ -191,7 +192,7 @@ void Run(aio::AioEngine& ioEngine, aio::AioEngine::IoTask& task, size_t epochNum
         }
         auto cost = duration<double>(steady_clock::now() - tp).count() * 1e3;
         auto bandwidth = total / cost / 1e6;
-        fmt::println("[{:04}/{:04}] {} task({} x {}) finish, cost={:.3f}ms, bw={:.3f}GB/s.", i + 1,
+        std::printf("[%04zu/%04zu] %s task(%zu x %zu) finish, cost=%.3fms, bw=%.3fGB/s.\n", i + 1,
                      epochNumber, taskType, size, number, cost, bandwidth);
     }
 }

@@ -24,6 +24,7 @@
 #ifndef AIO_AIO_ENGINE_H
 #define AIO_AIO_ENGINE_H
 
+#include <cstdio>
 #include <memory>
 #include <unistd.h>
 #include "aio_impl.h"
@@ -86,7 +87,8 @@ private:
                       const AioImpl::Result& result)
     {
         if (result.error != 0) {
-            fmt::println("Failed({}) to do io on block({}).", result.error, id);
+            const auto block = BlockIdToString(id);
+            std::printf("Failed(%d) to do io on block(%s).\n", result.error, block.c_str());
         }
         ::close(fd);
         w->Done();
@@ -96,7 +98,8 @@ private:
                         const BlockOpener::OpenResult& result)
     {
         if (result.error != 0) {
-            fmt::println("Failed({}) to do open on block({}).", result.error, shard.id);
+            const auto block = BlockIdToString(shard.id);
+            std::printf("Failed(%d) to do open on block(%s).\n", result.error, block.c_str());
             if (result.fd >= 0) { ::close(result.fd); }
             w->Done();
             return;

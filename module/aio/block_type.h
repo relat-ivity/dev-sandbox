@@ -25,7 +25,10 @@
 #define AIO_BLOCK_TYPE_H
 
 #include <array>
-#include <fmt/ranges.h>
+#include <cstddef>
+#include <functional>
+#include <string>
+#include <string_view>
 
 namespace aio {
 
@@ -38,14 +41,19 @@ struct BlockIdHasher {
     }
 };
 
-}  // namespace aio
-
-template <>
-struct fmt::formatter<aio::BlockId> : fmt::formatter<std::string> {
-    auto format(aio::BlockId blockId, format_context& ctx) const -> decltype(ctx.out())
-    {
-        return fmt::format_to(ctx.out(), "{:02x}", fmt::join(blockId, ""));
+inline std::string BlockIdToString(const BlockId& blockId)
+{
+    constexpr char hexChars[] = "0123456789abcdef";
+    std::string result;
+    result.reserve(blockId.size() * 2);
+    for (const auto byte : blockId) {
+        const auto value = std::to_integer<unsigned char>(byte);
+        result.push_back(hexChars[value >> 4]);
+        result.push_back(hexChars[value & 0x0F]);
     }
-};
+    return result;
+}
+
+}  // namespace aio
 
 #endif
