@@ -18,6 +18,7 @@ jobs:
         with:
           style: file
           tidy-checks: '-*'
+          ignore: 'vendor'
           files-changed-only: true
           lines-changed-only: diff
           format-review: false
