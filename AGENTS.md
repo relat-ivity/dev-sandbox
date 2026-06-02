@@ -50,6 +50,14 @@ GDR 实现位于 `module/copy/cuda/gdr`，复用 `copy` 的公共基类体系，
 - `module/copy/cuda/gdr`: CUDA GDR/RDMA 拷贝测试实现
 - `module/logger`: 日志库
 - `module/trans`: 数据传输性能测试
+- `vendor/`: 第三方依赖（通过 FetchContent 下载）
+
+## 依赖管理
+
+使用 CMake FetchContent 自动下载依赖：
+- fmt (11.2.0): 需要网络连接访问 GitHub 或 GitCode 镜像
+
+首次构建会尝试从 GitHub 下载，失败则尝试 GitCode 镜像。
 
 ## CI 流程
 

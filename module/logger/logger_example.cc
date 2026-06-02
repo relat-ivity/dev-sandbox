@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * */
+#include <vector>
 #include "logger/logger.h"
 
 struct UserType {
@@ -28,15 +29,25 @@ struct UserType {
     explicit UserType(int32_t v) : value(v) {}
 };
 
+template <>
+struct fmt::formatter<UserType> : fmt::formatter<std::string> {
+    auto format(UserType my, format_context& ctx) const -> decltype(ctx.out())
+    {
+        return fmt::format_to(ctx.out(), "[UserType value={}]", my.value);
+    }
+};
+
 int main(int32_t argc, char const* argv[])
 {
-    LOG_INFO("Running with %d arguments.", argc);
-    for (auto i = 0; i < argc; ++i) { LOG_DEBUG("Argument %d: %s.", i, argv[i]); }
-    LOG_WARN("Easy padding in numbers like %08d.", 12);
-    LOG_CRITICAL("Support for int: %d;  hex: %x;  oct: %o.", 42, 42, 42);
-    LOG_INFO("Support for floats %03.2f.", 1.23456);
-    LOG_INFO("%8s aligned, %-8s aligned.", "right", "left");
-    const auto user = UserType(42);
-    LOG_ERROR("Custom type example: [UserType value=%d].", user.value);
+    LOG_INFO("Running with {} arguments.", argc);
+    for (auto i = 0; i < argc; ++i) { LOG_DEBUG("Argument {}: {}.", i, argv[i]); }
+    LOG_WARN("Easy padding in numbers like {:08d}.", 12);
+    LOG_CRITICAL("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}.", 42);
+    LOG_INFO("Support for floats {:03.2f}.", 1.23456);
+    LOG_INFO("Positional args are {1} {0}..", "too", "supported");
+    LOG_INFO("{:>8} aligned, {:<8} aligned.", "right", "left");
+    std::vector<int> vec = {1, 2, 3};
+    LOG_INFO("Vector example: {}.", vec);
+    LOG_ERROR("Custom type example: {}.", UserType(42));
     return 0;
 }

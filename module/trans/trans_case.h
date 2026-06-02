@@ -26,7 +26,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstdio>
+#include <fmt/core.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -73,12 +73,12 @@ public:
     void Register(std::shared_ptr<TransCase> c) { cases_.push_back(std::move(c)); }
     void ShowAllCases() const
     {
-        std::printf("[[ ALL CASES ]]\n");
+        fmt::println("[[ ALL CASES ]]");
         auto formatPrefix = [](const auto& c) {
             auto typeStr = c->type == TransType::H2D ? "[H2D]" : "[D2H]";
             auto src = c->type == TransType::H2D ? c->host : c->device;
             auto dst = c->type == TransType::H2D ? c->device : c->host;
-            return std::string(typeStr) + " " + src + " --(" + c->method + ")--> " + dst;
+            return fmt::format("{} {} --({})--> {}", typeStr, src, c->method, dst);
         };
         auto sorted = cases_;
         std::stable_sort(sorted.begin(), sorted.end(),
@@ -87,8 +87,8 @@ public:
         for (const auto& c : sorted) { maxLen = std::max(maxLen, formatPrefix(c).length()); }
         for (const auto& c : sorted) {
             auto prefix = formatPrefix(c);
-            auto padding = std::string(maxLen - prefix.length(), ' ');
-            std::printf("  %s%s : %s\n", prefix.c_str(), padding.c_str(), c->brief.c_str());
+            fmt::println("  {}{} : {}", prefix, std::string(maxLen - prefix.length(), ' '),
+                         c->brief);
         }
     }
     std::vector<std::shared_ptr<TransCase>> Filter(const TransType& type,

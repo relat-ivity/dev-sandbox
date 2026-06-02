@@ -22,8 +22,8 @@
  * SOFTWARE.
  * */
 #include "aio_impl.h"
-#include <cstdio>
 #include <cstring>
+#include <fmt/format.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/syscall.h>
@@ -94,7 +94,7 @@ AioImpl::~AioImpl()
     if (eventThread_.joinable()) {
         uint64_t val = 1;
         auto ret = write(eventFd_, &val, sizeof(val));
-        if (ret < 0) { std::printf("Failed to call write.\n"); }
+        if (ret < 0) { fmt::println("Failed to call write."); }
         eventThread_.join();
     }
     if (epollFd_ >= 0) { close(epollFd_); }
@@ -132,7 +132,7 @@ void AioImpl::CompletionLoop()
             if (epollEvents[i].data.ptr == nullptr) {
                 uint64_t count;
                 auto ret = read(eventFd_, &count, sizeof(count));
-                if (ret < 0) { std::printf("Failed to call read.\n"); }
+                if (ret < 0) { fmt::println("Failed to call read."); }
                 HarvestCompletions(aioEvents);
             }
         }

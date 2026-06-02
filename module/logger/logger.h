@@ -24,16 +24,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <cstdint>
+#include <fmt/chrono.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <memory>
-#include <string>
-
-#if defined(__GNUC__) || defined(__clang__)
-#define LOGGER_PRINTF_FORMAT(format_index, first_arg) \
-    __attribute__((format(printf, format_index, first_arg)))
-#else
-#define LOGGER_PRINTF_FORMAT(format_index, first_arg)
-#endif
 
 class LoggerImpl;
 class Logger {
@@ -51,7 +45,11 @@ public:
         return instance;
     }
     ~Logger();
-    void Log(Level lv, const SourceLocation& loc, const char* format, ...) LOGGER_PRINTF_FORMAT(4, 5);
+    template <typename... Args>
+    void Log(Level lv, const SourceLocation& loc, fmt::format_string<Args...> fmt, Args&&... args)
+    {
+        LogInternal(lv, loc, fmt::format(fmt, std::forward<Args>(args)...));
+    }
 
 private:
     Logger();
@@ -63,14 +61,12 @@ private:
 };
 
 #define LOG_SOURCE_LOCATION {__FILE__, __FUNCTION__, __LINE__}
-#define __LOG(lv, format, ...) \
-    Logger::Instance().Log(lv, LOG_SOURCE_LOCATION, format, ##__VA_ARGS__)
-#define LOG_DEBUG(format, ...) __LOG(Logger::Level::DEBUG, format, ##__VA_ARGS__)
-#define LOG_INFO(format, ...) __LOG(Logger::Level::INFO, format, ##__VA_ARGS__)
-#define LOG_WARN(format, ...) __LOG(Logger::Level::WARN, format, ##__VA_ARGS__)
-#define LOG_ERROR(format, ...) __LOG(Logger::Level::ERROR, format, ##__VA_ARGS__)
-#define LOG_CRITICAL(format, ...) __LOG(Logger::Level::CRITICAL, format, ##__VA_ARGS__)
-
-#undef LOGGER_PRINTF_FORMAT
+#define __LOG(lv, fmt, ...) \
+    Logger::Instance().Log(lv, LOG_SOURCE_LOCATION, FMT_STRING(fmt), ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) __LOG(Logger::Level::DEBUG, fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) __LOG(Logger::Level::INFO, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...) __LOG(Logger::Level::WARN, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) __LOG(Logger::Level::ERROR, fmt, ##__VA_ARGS__)
+#define LOG_CRITICAL(fmt, ...) __LOG(Logger::Level::CRITICAL, fmt, ##__VA_ARGS__)
 
 #endif  // LOGGER_H

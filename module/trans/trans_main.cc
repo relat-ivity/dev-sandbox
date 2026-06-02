@@ -21,24 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * */
-#include <cstdio>
+#include <fmt/ranges.h>
 #include <unordered_map>
 #include "trans_case.h"
 #include "trans_runtime.h"
-
-namespace {
-
-std::string JoinStrings(const std::vector<std::string>& values, const char* separator)
-{
-    std::string result;
-    for (std::size_t i = 0; i < values.size(); ++i) {
-        if (i > 0) { result += separator; }
-        result += values[i];
-    }
-    return result;
-}
-
-}  // namespace
 
 struct TransArgs {
     std::vector<std::string> hosts;
@@ -53,33 +39,30 @@ struct TransArgs {
     TransArgs() = default;
     static void Help(const char* proc)
     {
-        std::printf("Usage: %s [options]\n", proc ? proc : "trans");
-        std::printf("Options:\n");
-        std::printf("  -H <host>      Host buffer (can be specified multiple times)\n");
-        std::printf("  -D <device>    Device buffer (can be specified multiple times)\n");
-        std::printf("  -M <method>    Transfer method (can be specified multiple times)\n");
-        std::printf("  -t <type>      Transfer type: H2D or D2H (runs all if not specified)\n");
-        std::printf("  -s <size>      Transfer size in bytes (default: 32768)\n");
-        std::printf("  -n <number>    Number of items (default: 1024)\n");
-        std::printf("  -d <nDevice>   Number of devices (default: 8)\n");
-        std::printf("  -i <nIter>     Number of iterations (default: 1024)\n");
-        std::printf("  -h             Show this help message\n");
+        fmt::println("Usage: {} [options]", proc ? proc : "trans");
+        fmt::println("Options:");
+        fmt::println("  -H <host>      Host buffer (can be specified multiple times)");
+        fmt::println("  -D <device>    Device buffer (can be specified multiple times)");
+        fmt::println("  -M <method>    Transfer method (can be specified multiple times)");
+        fmt::println("  -t <type>      Transfer type: H2D or D2H (runs all if not specified)");
+        fmt::println("  -s <size>      Transfer size in bytes (default: 32768)");
+        fmt::println("  -n <number>    Number of items (default: 1024)");
+        fmt::println("  -d <nDevice>   Number of devices (default: 8)");
+        fmt::println("  -i <nIter>     Number of iterations (default: 1024)");
+        fmt::println("  -h             Show this help message");
     }
     void Show() const
     {
-        const auto hostList = JoinStrings(hosts, ", ");
-        const auto deviceList = JoinStrings(devices, ", ");
-        const auto methodList = JoinStrings(methods, ", ");
-        std::printf("[[ INPUTS ]]\n");
-        std::printf("  TransArgs::hosts = [%s]\n", hostList.c_str());
-        std::printf("  TransArgs::devices = [%s]\n", deviceList.c_str());
-        std::printf("  TransArgs::methods = [%s]\n", methodList.c_str());
-        std::printf("  TransArgs::type = %s\n",
-                    type == TransType::ANY ? "ANY" : (type == TransType::H2D ? "H2D" : "D2H"));
-        std::printf("  TransArgs::size = %zu\n", size);
-        std::printf("  TransArgs::number = %zu\n", number);
-        std::printf("  TransArgs::nDevice = %zu\n", nDevice);
-        std::printf("  TransArgs::nIteration = %zu\n", nIteration);
+        fmt::println("[[ INPUTS ]]");
+        fmt::println("  TransArgs::hosts = [{}]", fmt::join(hosts, ", "));
+        fmt::println("  TransArgs::devices = [{}]", fmt::join(devices, ", "));
+        fmt::println("  TransArgs::methods = [{}]", fmt::join(methods, ", "));
+        fmt::println("  TransArgs::type = {}",
+                     type == TransType::ANY ? "ANY" : (type == TransType::H2D ? "H2D" : "D2H"));
+        fmt::println("  TransArgs::size = {}", size);
+        fmt::println("  TransArgs::number = {}", number);
+        fmt::println("  TransArgs::nDevice = {}", nDevice);
+        fmt::println("  TransArgs::nIteration = {}", nIteration);
     }
     int32_t Parse(int argc, char const* argv[])
     {
@@ -96,7 +79,7 @@ struct TransArgs {
         };
         auto nextArg = [&](int& i, const char* opt) -> const char* {
             if (i + 1 >= argc) {
-                std::printf("Error: missing value for %s\n", opt);
+                fmt::println("Error: missing value for {}", opt);
                 return nullptr;
             }
             return argv[++i];
@@ -106,7 +89,7 @@ struct TransArgs {
                 out = std::stoull(s);
                 return true;
             } catch (const std::exception& e) {
-                std::printf("Error: invalid number for %s: %s\n", opt, e.what());
+                fmt::println("Error: invalid number for {}: {}", opt, e.what());
                 return false;
             }
         };
@@ -136,12 +119,12 @@ struct TransArgs {
                 } else if (std::string(val) == "D2H") {
                     type = TransType::D2H;
                 } else {
-                    std::printf("Error: unknown type '%s'. Supported: H2D, D2H\n", val);
+                    fmt::println("Error: unknown type '{}'. Supported: H2D, D2H", val);
                     return -1;
                 }
                 continue;
             }
-            std::printf("Error: unknown option '%s'\n", opt.c_str());
+            fmt::println("Error: unknown option '{}'", opt);
             return -1;
         }
         return 0;

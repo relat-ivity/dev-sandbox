@@ -42,9 +42,9 @@ public:
     }
     std::string BlockPath(const BlockId& block) const
     {
-        const auto file = BlockIdToString(block);
-        const auto dir = file.substr(0, shardSize_);
-        return root_ + dir + "/" + file;
+        const auto& file = fmt::format("{}", block);
+        const auto& dir = file.substr(0, shardSize_);
+        return fmt::format("{}{}/{}", root_, dir, file);
     }
 
 private:

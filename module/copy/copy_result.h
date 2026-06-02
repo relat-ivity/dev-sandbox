@@ -25,7 +25,7 @@
 #define COPY_RESULT_H
 
 #include <algorithm>
-#include <cstdio>
+#include <fmt/format.h>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -62,10 +62,7 @@ public:
             }
             std::string ToString() const
             {
-                char buffer[128];
-                std::snprintf(buffer, sizeof(buffer), "%zu / %zu / %zu / %zu / %zu", min, max,
-                              avg, p50, p90);
-                return buffer;
+                return fmt::format("{} / {} / {} / {} / {}", min, max, avg, p50, p90);
             }
         } submit, copy;
         Result(std::string src, std::string dst, std::string method, size_t size, size_t count,
@@ -84,19 +81,16 @@ public:
     void Show(std::string title) const
     {
         const std::string indentation = "  ";
-        std::printf("%s\n", title.c_str());
-        std::printf("%s%-18s%-18s%-10s%-10s%-8s%-40s%-44s%s\n", indentation.c_str(), "From",
-                    "To", "Method", "Size(KB)", "Count",
-                    "Submit(us)-(Min/Max/Avg/P50/P90)", "Copy(us)-(Min/Max/Avg/P50/P90)",
-                    "BW(GB/s)");
+        fmt::println(title);
+        fmt::println("{}{:<18}{:<18}{:<10}{:<10}{:<8}{:<40}{:<44}{}", indentation, "From", "To",
+                     "Method", "Size(KB)", "Count", "Submit(us)-(Min/Max/Avg/P50/P90)",
+                     "Copy(us)-(Min/Max/Avg/P50/P90)", "BW(GB/s)");
         for (const auto& result : results_) {
             auto bw =
                 result.size * result.count * 1e6f / result.copy.avg / 1024.f / 1024.f / 1024.f;
-            const auto submit = result.submit.ToString();
-            const auto copy = result.copy.ToString();
-            std::printf("%s%-18s%-18s%-10s%-10.0f%-8zu%-40s%-44s%.3f\n", indentation.c_str(),
-                        result.src.c_str(), result.dst.c_str(), result.method.c_str(),
-                        result.size / 1024.f, result.count, submit.c_str(), copy.c_str(), bw);
+            fmt::println("{}{:<18}{:<18}{:<10}{:<10.0f}{:<8}{:<40}{:<44}{:.3f}", indentation,
+                         result.src, result.dst, result.method, result.size / 1024.f, result.count,
+                         result.submit.ToString(), result.copy.ToString(), bw);
         }
     }
 
