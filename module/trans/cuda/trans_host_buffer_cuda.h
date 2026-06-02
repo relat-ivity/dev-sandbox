@@ -24,6 +24,7 @@
 #ifndef TRANS_HOST_BUFFER_CUDA_H
 #define TRANS_HOST_BUFFER_CUDA_H
 
+#include <cstring>
 #include <sys/mman.h>
 #include "trans_assert_cuda.h"
 #include "trans_buffer.h"

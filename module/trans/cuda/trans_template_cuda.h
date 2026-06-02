@@ -24,6 +24,7 @@
 #ifndef TRANS_TEMPLATE_CUDA_H
 #define TRANS_TEMPLATE_CUDA_H
 
+#include <cstring>
 #include "trans_assert_cuda.h"
 #include "trans_kernel_cuda.h"
 #include "trans_stopwatch.h"

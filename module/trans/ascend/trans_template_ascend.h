@@ -24,6 +24,7 @@
 #ifndef TRANS_TEMPLATE_ASCEND_H
 #define TRANS_TEMPLATE_ASCEND_H
 
+#include <cstring>
 #include "trans_assert_ascend.h"
 #include "trans_stopwatch.h"
 #include "trans_template.h"
